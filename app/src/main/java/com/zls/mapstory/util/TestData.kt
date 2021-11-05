@@ -43,7 +43,9 @@ object TestData {
 
     private fun createContinent(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H): Terrain {
         val terrain = Terrain(TerrainType.PLAIN, "ASIAN", mutableListOf())
-        terrain.borderPoints.addAll(BorderCreator(200, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
+        //terrain.borderPoints.addAll(SlimAreaCreator(w*h / 2, 200, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
+        //terrain.borderPoints.addAll(FatAreaCreator(w*h/3, 200, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
+        terrain.borderPoints.addAll(FatAreaCreator(w*h/2, 400, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
         return terrain
     }
 
