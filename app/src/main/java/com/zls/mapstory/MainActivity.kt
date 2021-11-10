@@ -5,7 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.zls.mapstory.bean.Terrain
 import com.zls.mapstory.type.TerrainType
-import com.zls.mapstory.util.AreaCreator
+import com.zls.mapstory.util.AreaCreator2
 import com.zls.mapstory.util.Const
 import com.zls.mapstory.util.TestData
 import com.zls.mapstory.widght.CrisMap
@@ -21,23 +21,31 @@ class MainActivity : AppCompatActivity() {
         crisMap = findViewById(R.id.cris_map)
 
         (findViewById<View>(R.id.data)).setOnClickListener { getData() }
-        (findViewById<View>(R.id.square)).setOnClickListener { render(crisMap, squareTerrain!!) }
-        (findViewById<View>(R.id.dot)).setOnClickListener { render(crisMap, dotTerrain!!) }
+        (findViewById<View>(R.id.square)).setOnClickListener {
+            curDot = false
+            render()
+        }
+        (findViewById<View>(R.id.dot)).setOnClickListener {
+            curDot = true
+            render()
+        }
     }
 
+    var curDot = true
     var seaTerrain = TestData.createSea()
     var squareTerrain: Terrain? = null
     var dotTerrain: Terrain? = null
     private fun getData(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H){
         val type: TerrainType = TerrainType.PLAIN
         val area = w * h / 4
-        val creator = AreaCreator(area, 1000, w/8, h/8, w*7/8, h*7/8)
+        val creator = AreaCreator2(area, 2000, w/8, h/8, w*7/8, h*7/8)
         creator.start(w/2, h/2)
         squareTerrain = Terrain(type, area, creator.squares, w, h, creator.step)
         dotTerrain = Terrain(type, area, creator.dots, w, h, creator.step)
+        render()
     }
-    private fun render(map: CrisMap, landTerrain: Terrain){
-        map.refresh(mutableListOf(seaTerrain, landTerrain))
+    private fun render(){
+        crisMap.refresh(mutableListOf(seaTerrain, if (curDot) dotTerrain!! else squareTerrain!!))
     }
 
 

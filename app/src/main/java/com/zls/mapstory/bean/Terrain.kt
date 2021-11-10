@@ -21,7 +21,7 @@ data class Terrain(val type: TerrainType,
                    val step: Int = 1,
                    val name: String = type.getRandomName()) {
 
-    val showBorder = true
+    val showBorder = false
     val showSpace = false
 
     fun drawSelfWithSpace(uiW: Int, uiH: Int, paint: Paint, canvas: Canvas, shader: BitmapShader) {
