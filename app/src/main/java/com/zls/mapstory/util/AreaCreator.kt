@@ -38,11 +38,11 @@ class AreaCreator(area: Int, private val count: Int, left: Int, top: Int, right:
         }
 
         if (step > 1){
-            l = floor(1.0 * left / step).toInt()
-            t = floor(1.0 * top / step).toInt()
+            l = ceil(1.0 * left / step).toInt() + 1
+            t = ceil(1.0 * top / step).toInt() + 1
 
-            r = ceil(1.0 * right / step).toInt()
-            b = ceil(1.0 * bottom / step).toInt()
+            r = floor(1.0 * right / step).toInt() - 1
+            b = floor(1.0 * bottom / step).toInt() - 1
         }
     }
 
@@ -73,7 +73,7 @@ class AreaCreator(area: Int, private val count: Int, left: Int, top: Int, right:
     }
 
     private fun execute(x: Int, y: Int) {
-        val justTest = true
+        val justTest = false
         if (justTest){
             borders.add(Point(4,1))
             borders.add(Point(1,2))
@@ -84,6 +84,8 @@ class AreaCreator(area: Int, private val count: Int, left: Int, top: Int, right:
             borders.add(Point(3,3))
             borders.add(Point(4,3))
             borders.add(Point(5,3))
+            borders.add(Point(1,4))
+            borders.add(Point(2,4))
 
             points.addAll(borders)
             points.add(Point(4,2))
