@@ -12,6 +12,7 @@ class FatAreaCreator(area: Int, count: Int, left: Int, right: Int, top: Int, bot
 
     override fun start(x: Int, y: Int): MutableList<Point> {
         execute(x, y)
+        //sortBorder(true)
         return borders
     }
 
@@ -24,31 +25,49 @@ class FatAreaCreator(area: Int, count: Int, left: Int, right: Int, top: Int, bot
         val random = Random(System.currentTimeMillis())
 
         for (index in 1 until count){
-            val border = borders[random.nextInt(borders.size)]
-            val randomNext = getRandomNeighbor(border.x, border.y, random) {
-                isValidPoint(it.x, it.y) && !points.contains(it)
-            }
-            randomNext?.let {
-                points.add(it)
-                if (isBorder(it)){
-                    borders.add(it)
+            val borderIndex = random.nextInt(borders.size)
+            val border = borders[borderIndex]
+
+            val neighbors = getNeighbors(border.x, border.y)
+            for (item in neighbors){
+                val valid = isValidPoint(item.x, item.y)
+                if (valid){
+                    val empty = !points.contains(item)
+                    if (empty){
+                        points.add(item)
+                        if (isBorder(item)){
+                            borders.add(item)
+                        }
+                        updateNeighbors(item.x, item.y)
+                        break
+                    }
                 }
-                updateNeighbors(it)
             }
         }
     }
 
-    private fun updateNeighbors(point: Point){
-        borders.removeAll(getNeighbors(point.x, point.y){
-            isValidPoint(it.x, it.y) && points.contains(it) && borders.contains(it) && !isBorder(it)
-        })
+    private fun updateNeighbors(x: Int, y: Int){
+        val neighbors = getNeighbors(x, y)
+        val delete = mutableListOf<Point>()
+        for (item in neighbors){
+            if (borders.contains(item)){
+                val isBorder = isBorder(item)
+                if (!isBorder){
+                    delete.add(item)
+                }
+            }
+        }
+        borders.removeAll(delete)
     }
 
     private fun isBorder(point: Point): Boolean {
-        val neighbors = getNeighbors(point.x, point.y){
-            isValidPoint(it.x, it.y) && !points.contains(it)
+        val neighbors = getNeighbors(point.x, point.y)
+        for (item in neighbors){
+            if (!points.contains(item)){
+                return true
+            }
         }
-        return neighbors.size > 0
+        return false
     }
 
 }

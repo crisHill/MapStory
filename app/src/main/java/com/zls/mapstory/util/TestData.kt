@@ -1,10 +1,9 @@
 package com.zls.mapstory.util
 
 import android.graphics.Point
+import com.zls.mapstory.bean.Square
 import com.zls.mapstory.bean.Terrain
 import com.zls.mapstory.type.TerrainType
-import kotlin.math.min
-import kotlin.random.Random
 
 /**
  * @author criszhai
@@ -22,31 +21,18 @@ object TestData {
         return terrains
     }
 
-    private fun createSea(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H): Terrain {
-        val terrain = Terrain(TerrainType.SEA, "pacific ocean", mutableListOf())
-        val random = Random(System.currentTimeMillis())
-        val sp = min(w, h) / 200
-        for (x in 10 until w - 10 step sp){
-            terrain.borderPoints.add(Point(x, random.nextInt(sp * 5)))
-        }
-        for (y in 10 until h - 10 step sp){
-            terrain.borderPoints.add(Point(w - random.nextInt(sp * 5), y))
-        }
-        for (x in w - 10 downTo 10 step sp){
-            terrain.borderPoints.add(Point(x, h - random.nextInt(sp * 5)))
-        }
-        for (y in h - 10 until 10 step sp){
-            terrain.borderPoints.add(Point(random.nextInt(sp * 5), y))
-        }
-        return terrain
+    fun createSea(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H): Terrain {
+        return Terrain(TerrainType.SEA, w*h, mutableListOf(Square(Point(0,0),w,h)),w,h)
     }
 
-    private fun createContinent(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H): Terrain {
-        val terrain = Terrain(TerrainType.PLAIN, "ASIAN", mutableListOf())
-        //terrain.borderPoints.addAll(SlimAreaCreator(w*h / 2, 200, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
-        //terrain.borderPoints.addAll(FatAreaCreator(w*h/3, 200, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
-        terrain.borderPoints.addAll(FatAreaCreator(w*h/2, 400, 100, w  - 100, 200, h - 200).start(w / 2, h / 2))
-        return terrain
+    fun createContinent(showDots: Boolean = false, w: Int = Const.WORLD_W, h: Int = Const.WORLD_H): Terrain {
+        val type: TerrainType = TerrainType.PLAIN
+        val area = w * h / 2
+
+        val creator = AreaCreator(area, 300, 300, 300, w*3/4, h*4/5)
+        creator.start(w/2, h/2)
+
+        return Terrain(type, area, if (showDots) creator.dots else creator.squares, w, h, creator.step)
     }
 
 }

@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.View
 import com.zls.mapstory.bean.Terrain
 import com.zls.mapstory.type.TerrainType
-import com.zls.mapstory.util.CommonUtil
 import java.util.*
 
 /**
@@ -39,14 +38,7 @@ class CrisMap(context: Context, attrs: AttributeSet?): View(context, attrs) {
 
         if (terrains != null){
             for (terrain in terrains!!){
-                if (terrain.type == TerrainType.PLAIN){
-                    paint.shader = null
-                    paint.color = Color.RED
-                    canvas!!.drawPath(CommonUtil.border2Path(terrain.borderPoints, measuredWidth, measuredHeight), paint)
-                    continue
-                }
-                paint.shader = paintMap!![terrain.type]
-                canvas!!.drawPath(CommonUtil.border2Path(terrain.borderPoints, measuredWidth, measuredHeight), paint)
+                terrain.drawSelf(measuredWidth, measuredHeight, paint, canvas!!, paintMap!![terrain.type]!!)
             }
         }
     }
