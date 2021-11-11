@@ -2,10 +2,15 @@ package com.zls.mapstory.util
 
 import android.graphics.Path
 import android.graphics.Point
+import android.graphics.Rect
+import com.zls.mapstory.BuildConfig
 import com.zls.mapstory.bean.Square
+import com.zls.mapstory.type.Direction
+import com.zls.mapstory.type.Direction8
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 /**
  * @author criszhai
@@ -39,8 +44,8 @@ object CommonUtil {
             p.x += item.x
             p.y += item.y
         }
-        p.x = p.x / list.size
-        p.y = p.y / list.size
+        p.x = (1.0 * p.x / list.size).roundToInt()
+        p.y = (1.0 * p.y / list.size).roundToInt()
 
         return if (list.contains(p)){
             p
@@ -69,34 +74,47 @@ object CommonUtil {
         return mutableListOf(onePoint2Square(list[0]), onePoint2Square(list[1]))
     }
     private fun tryConvertPoints2Line(list: MutableList<Point>): Square? {
+        if (BuildConfig.DEBUG && list.size <= 2) {
+            error("Assertion failed")
+        }
         var sameX = true
         var minY = list[0].y
         var maxY = minY
-        for (index in 0 until list.size - 1){
-            minY = min(minY, list[index + 1].y)
-            maxY = max(maxY, list[index + 1].y)
-            if (list[index].x != list[index + 1].x){
+        for (index in 0 until list.size - 1) {
+            if (list[index].x != list[index + 1].x) {
                 sameX = false
                 break
             }
+            minY = min(minY, list[index + 1].y)
+            maxY = max(maxY, list[index + 1].y)
         }
-        if (sameX){
-            return Square(Point(list[0].x, minY), 0, maxY - minY)
+        if (sameX) {
+            val yValid = maxY - minY == list.size - 1
+            if (yValid){
+                return Square(Point(list[0].x, minY), 0, maxY - minY)
+            }else {
+                return null
+            }
         }
 
         var sameY = true
         var minX = list[0].x
         var maxX = minX
-        for (index in 0 until list.size - 1){
-            minX = min(minX, list[index + 1].x)
-            maxX = max(maxX, list[index + 1].x)
-            if (list[index].y != list[index + 1].y){
+        for (index in 0 until list.size - 1) {
+            if (list[index].y != list[index + 1].y) {
                 sameY = false
                 break
             }
+            minX = min(minX, list[index + 1].x)
+            maxX = max(maxX, list[index + 1].x)
         }
-        if (sameY){
-            return Square(Point(minX, list[0].y), maxX - minX, 0)
+        if (sameY) {
+            val xValid = maxX - minX == list.size - 1
+            if (xValid){
+                return Square(Point(minX, list[0].y), maxX - minX, 0)
+            }else {
+                return null
+            }
         }
 
         return null
@@ -185,6 +203,127 @@ object CommonUtil {
             points.addAll(dividedList)
         }
         points2Squares(points, squares)
+    }
+
+    fun getNeighbors(point: Point, dirs: Array<Direction> = Direction.values(), space: Int = 1): MutableList<Point> {
+        val result: MutableList<Point> = mutableListOf()
+        for (dir in dirs){
+            val next = Point(point.x + dir.deltaX * space, point.y + dir.deltaY * space)
+            result.add(next)
+        }
+        return result
+    }
+
+    fun removeFakeBorders(points: MutableList<Point>, borders: MutableList<Point>, bound: Rect, point: Point){
+        val neighbors = getNeighbors(point)
+        val delete = mutableListOf<Point>()
+        for (item in neighbors){
+            if (borders.contains(item)){
+                val isBorder = isBorder(points, bound, item)
+                if (!isBorder){
+                    delete.add(item)
+                }
+            }
+        }
+        borders.removeAll(delete)
+    }
+
+    fun isValid(point: Point, bound: Rect): Boolean {
+        return point.x in bound.left .. bound.right && point.y in bound.top .. bound.bottom
+    }
+
+    fun isBorder(points: MutableList<Point>, bound: Rect, point: Point): Boolean {
+        val neighbors = getNeighbors(point)
+        for (item in neighbors){
+            if (!isValid(item, bound)){
+                return true
+            }
+            if (!points.contains(item)){
+                return true
+            }
+        }
+        return false
+    }
+
+    fun fillWithSlim(allPoints: MutableList<Point>, borders: MutableList<Point>,
+                     slimPoints: MutableList<Point>, bound: Rect, slimCount: Int,
+                     cur: Point, random: Random, slimDegree: Int = 4): Boolean {
+        if (slimPoints.size >= slimCount){
+            return true
+        }
+
+        // 如果当前坐标已被填充，则返回空
+        if(allPoints.contains(cur)) {
+            return false
+        }
+
+        // 填充当前坐标
+        allPoints.add(cur)
+        slimPoints.add(cur)
+        if (isBorder(allPoints, bound, cur)){
+            borders.add(cur)
+        }
+        removeFakeBorders(allPoints, borders, bound, cur)
+
+        // 随机四个方向的顺序
+        val directions = Direction.getShuffledList(random)
+        val dSize = directions.size
+        for (i in 0 until dSize) {
+            if (slimDegree in 1..dSize && i >= slimDegree){
+                return false
+            }
+            val dir = directions[i]
+            val newX = cur.x + dir.deltaX
+            val newY = cur.y + dir.deltaY
+            val newCur = Point(newX, newY)
+
+            // 判断边界
+            if(!isValid(newCur, bound)) {
+                continue
+            }
+
+            // 进入下一层递归并得到结果
+            val success = fillWithSlim(allPoints,borders,slimPoints,bound,slimCount,newCur,random,slimDegree)
+
+            // 若结果非空则返回结果
+            if(success) return success
+        }
+        // 状态还原(当需要面积与总面积比例比较大的时候，有可能陷入搜索的死循环（或者说效率特别低）)
+        //border.remove(point)
+        return false
+    }
+
+    fun fillWithFat(allPoints: MutableList<Point>, borders: MutableList<Point>,
+                    bound: Rect, fatCount: Int, random: Random){
+        val dir = Direction8.getByType(random.nextInt(8) + 1)
+        val offsetX = random.nextInt(bound.right - bound.left) / 3
+        val offsetY = random.nextInt(bound.bottom - bound.top) / 3
+        val centerX = (bound.left + bound.right) / 2
+        val centerY = (bound.top + bound.bottom) / 2
+        val origin = Point(centerX + dir!!.deltaX * offsetX, centerY + dir.deltaY * offsetY)
+
+        allPoints.add(origin)
+        borders.add(origin)
+
+        for (index in 1 until fatCount){
+            val borderIndex = random.nextInt(borders.size)
+            val border = borders[borderIndex]
+            val neighbors = getNeighbors(border)
+            for (item in neighbors){
+                val valid = isValid(item, bound)
+                if (valid){
+                    val empty = !allPoints.contains(item)
+                    if (empty){
+                        allPoints.add(item)
+                        if (isBorder(allPoints, bound, item)){
+                            borders.add(item)
+                        }
+                        removeFakeBorders(allPoints, borders, bound, item)
+                        break
+                    }
+                }
+            }
+        }
     }
 
 }

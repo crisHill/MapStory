@@ -73,7 +73,7 @@ data class Terrain(val type: TerrainType,
             }else {
                 paint.shader = shader
             }
-            Log.i("drawSelf", "(${sq.origin.x},${sq.origin.y},${sq.width})->($l, $t, $r, $b)")
+            Log.i("drawSelf", "(${sq.origin.x},${sq.origin.y},${sq.width},${sq.height})->($l, $t, $r, $b)")
             canvas.drawRect(l, t, r, b, paint)
         }
 

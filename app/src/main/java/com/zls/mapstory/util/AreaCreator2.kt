@@ -91,10 +91,25 @@ class AreaCreator2(area: Int, private val count: Int, left: Int, top: Int, right
             points.add(Point(4,2))
             return
         }
-        val dotCount = count * 3 / 4
-        fillWithFat(dotCount, x, y)
-        var remain = count - dotCount
+        val dotCount = count * 1 / 3
         val random = Random(System.currentTimeMillis())
+        fillWithFat(dotCount, x, y)
+        var secondP: Point? = null
+        while (true){
+            val secondX = random.nextInt(r - l) + l
+            val secondY = random.nextInt(b - t) + t
+            val tempP = Point(secondX, secondY)
+            if (!points.contains(tempP)){
+                secondP = tempP
+                break
+            }
+        }
+        if (secondP == null){
+            return
+        }
+        fillWithFat(dotCount, secondP.x, secondP.y)
+
+        var remain = count - dotCount - dotCount
         while (true){
             if (remain < 1){
                 return
