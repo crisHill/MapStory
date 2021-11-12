@@ -561,4 +561,89 @@ object CommonUtil {
         return path
     }
 
+
+    fun pointEnlarge2(origin: Point, uiW: Int, uiH: Int, fullX: Int, fullY: Int): Point{
+        val xRatio = 1.0f * uiW / fullX
+        val yRatio = 1.0f * uiH / fullY
+        val x = (origin.x) * xRatio
+        val y = (origin.y) * yRatio
+        return Point(x.toInt(), y.toInt())
+    }
+    fun sortedBorders2Path2(borders: MutableList<Point>, uiW: Int, uiH: Int, fullX: Int, fullY: Int): Path {
+        val path = Path()
+        val p0 = pointEnlarge2(borders[0], uiW, uiH, fullX, fullY)
+        path.moveTo(p0.x.toFloat(), p0.y.toFloat())
+        for (index in 1 until borders.size){
+            val pi = pointEnlarge2(borders[index], uiW, uiH, fullX, fullY)
+            path.lineTo(pi.x.toFloat(), pi.y.toFloat())
+        }
+        path.close()
+        return path
+    }
+
+    fun startSortBorders2(points: MutableList<Point>, borders: MutableList<Point>, sorted: MutableList<Point>, step: Int){
+        var curPoint = borders[0]
+        for (i in 1 until borders.size){
+            val candidate = borders[i]
+            if (candidate.x < curPoint.x){
+                curPoint = candidate
+                continue
+            }
+            if (candidate.x == curPoint.x){
+                if (candidate.y < curPoint.y){
+                    curPoint = candidate
+                    continue
+                }
+            }
+        }
+
+        /*val neighbors = getNeighbors(curPoint)
+        var count = 0
+        for (item in neighbors){
+            if (points.contains(item)){
+                count ++
+            }
+        }
+        count = 2*/
+
+        sortBorders2(points, sorted, curPoint, 2, curPoint, Direction.RIGHT, step)
+    }
+
+    fun sortBorders2(points: MutableList<Point>, sorted: MutableList<Point>,
+                    startPoint: Point, startPointTraversalTimeRemain: Int,
+                    curPoint: Point, curDirection: Direction, step: Int){
+        val isStart = curPoint == startPoint
+        if (isStart && startPointTraversalTimeRemain == 1){
+            return
+        }
+
+        val addedPoint = Point(curPoint.x * step - step / 2, curPoint.y * step - step / 2)
+        if (curDirection == Direction.RIGHT){
+            addedPoint.x -= step / 2
+            addedPoint.y -= step / 2
+        }else if (curDirection == Direction.DOWN){
+            addedPoint.x += step / 2
+            addedPoint.y -= step / 2
+        }else if (curDirection == Direction.LEFT){
+            addedPoint.x += step / 2
+            addedPoint.y += step / 2
+        }else {
+            addedPoint.x -= step / 2
+            addedPoint.y += step / 2
+        }
+        sorted.add(addedPoint)
+
+        val remain = if (isStart) startPointTraversalTimeRemain - 1 else startPointTraversalTimeRemain
+
+        var nextDirection = getNextDirection(points, curPoint, curDirection)
+        if (nextDirection == null){
+            nextDirection = curDirection.opposite()
+            //反方向时最好加上一个点，防止形成斜线
+            sortBorders2(points, sorted, startPoint, remain, curPoint, nextDirection, step)
+        }else {
+            val nextPoint = Point(curPoint.x + nextDirection.deltaX, curPoint.y + nextDirection.deltaY)
+            sortBorders2(points, sorted, startPoint, remain, nextPoint, nextDirection, step)
+        }
+    }
+
 }

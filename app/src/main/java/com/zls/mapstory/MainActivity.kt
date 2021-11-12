@@ -2,22 +2,19 @@ package com.zls.mapstory
 
 import android.content.Intent
 import android.graphics.Rect
-import android.graphics.Region
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.zls.mapstory.bean.*
+import com.zls.mapstory.bean.DrawablePath
 import com.zls.mapstory.type.DrawableArea
 import com.zls.mapstory.type.TerrainType
-import com.zls.mapstory.util.AreaCreator5
+import com.zls.mapstory.util.AreaCreator6
 import com.zls.mapstory.util.CommonUtil
 import com.zls.mapstory.util.Const
-import com.zls.mapstory.util.TestData
 import com.zls.mapstory.widght.CommonMap
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -65,9 +62,9 @@ class MainActivity : AppCompatActivity() {
 
         val area = w*h/4
         val bound = Rect(10, 10, w - 10, h - 10)
-        val creator = AreaCreator5(area, bound, count)
+        val creator = AreaCreator6(area, bound, count)
         creator.start()
-        val path = CommonUtil.sortedBorders2Path(creator.path, creator.step, map.measuredWidth, map.measuredHeight, w, h)
+        val path = CommonUtil.sortedBorders2Path2(creator.path, map.measuredWidth, map.measuredHeight, w, h)
         data = DrawablePath(type, path)
 
         render()

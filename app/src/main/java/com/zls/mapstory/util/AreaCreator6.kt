@@ -3,7 +3,6 @@ package com.zls.mapstory.util
 import android.graphics.Point
 import android.graphics.Rect
 import com.zls.mapstory.bean.Square
-import com.zls.mapstory.bean.Zone
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
@@ -14,7 +13,7 @@ import kotlin.math.sqrt
  * @date 2021/11/4 9:56
  * @desc https://segmentfault.com/a/1190000014167823
  */
-class AreaCreator5(area: Int,
+class AreaCreator6(area: Int,
                    private val bound: Rect,
                    private var count: Int = 0,
                    private val slimRatioEveryTime: Double = 0.33, private val slimDegree: Int = 3) {
@@ -54,7 +53,7 @@ class AreaCreator5(area: Int,
         CommonUtil.printPoints("points", points)
         CommonUtil.printPoints("borders", borders)
 
-        CommonUtil.startSortBorders(points, borders, path)
+        CommonUtil.startSortBorders2(points, borders, path, step)
         CommonUtil.printPoints("path", path)
         //CommonUtil.points2Squares(mutableListOf(points), squares)
         //points2Zone()
