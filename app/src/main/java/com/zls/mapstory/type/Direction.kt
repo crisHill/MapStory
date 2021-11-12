@@ -50,4 +50,16 @@ enum class Direction(val deltaX: Int, val deltaY: Int, val type: Int, val desc: 
         return getByType(this.type - 1)!!
     }
 
+    fun opposite(): Direction {
+        return getByType(5 - this.type)!!
+    }
+
+    fun getDirections(): MutableList<Direction> {
+        val result = mutableListOf<Direction>()
+        result.add(pre())
+        result.add(this)
+        result.add(next())
+        return result
+    }
+
 }

@@ -4,12 +4,11 @@ import android.graphics.Path
 import android.graphics.Point
 import android.graphics.Rect
 import com.zls.mapstory.BuildConfig
+import com.zls.mapstory.bean.Line2
 import com.zls.mapstory.bean.Square
 import com.zls.mapstory.type.Direction
 import com.zls.mapstory.type.Direction8
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.random.Random
 
 /**
@@ -295,15 +294,16 @@ object CommonUtil {
 
     fun fillWithFat(allPoints: MutableList<Point>, borders: MutableList<Point>,
                     bound: Rect, fatCount: Int, random: Random){
-        val dir = Direction8.getByType(random.nextInt(8) + 1)
-        val offsetX = random.nextInt(bound.right - bound.left) / 3
-        val offsetY = random.nextInt(bound.bottom - bound.top) / 3
-        val centerX = (bound.left + bound.right) / 2
-        val centerY = (bound.top + bound.bottom) / 2
-        val origin = Point(centerX + dir!!.deltaX * offsetX, centerY + dir.deltaY * offsetY)
-
-        allPoints.add(origin)
-        borders.add(origin)
+        if (borders.size == 0){
+            val dir = Direction8.getByType(random.nextInt(8) + 1)
+            val offsetX = random.nextInt(bound.right - bound.left) / 3
+            val offsetY = random.nextInt(bound.bottom - bound.top) / 3
+            val centerX = (bound.left + bound.right) / 2
+            val centerY = (bound.top + bound.bottom) / 2
+            val origin = Point(centerX + dir!!.deltaX * offsetX, centerY + dir.deltaY * offsetY)
+            allPoints.add(origin)
+            borders.add(origin)
+        }
 
         for (index in 1 until fatCount){
             val borderIndex = random.nextInt(borders.size)
@@ -324,6 +324,240 @@ object CommonUtil {
                 }
             }
         }
+    }
+
+    fun printPoints(desc: String, points: MutableList<Point>){
+        println("$desc=")
+        for (p in points){
+            print("$p,")
+        }
+        print("\n")
+    }
+
+    fun generateShape(points: MutableList<Point>, borders: MutableList<Point>,
+                      bound: Rect, count: Int,
+                      fatRation: Float = 0.5f, slimRatioEveryTime: Float = 0.33f, slimDegree: Int = 3) {
+        val fatCount: Int = (count * fatRation).toInt()
+        val random = Random(System.currentTimeMillis())
+        fillWithFat(points, borders, bound, fatCount, random)
+        println("fatCount=$fatCount, real filled size=${points.size}")
+
+        var remain = count - fatCount
+        while (true){
+            if (remain < 1){
+                return
+            }
+
+            var slimCount = (remain * slimRatioEveryTime).toInt()
+            if (slimCount <= 8){
+                slimCount = remain
+            }
+
+            val border = borders[random.nextInt(borders.size)]
+            val neighbors = getNeighbors(border)
+            val curSize = points.size
+            for (neighbor in neighbors){
+                if (isValid(neighbor, bound) && !points.contains(neighbor)){
+                    fillWithSlim(points, borders, mutableListOf(), bound, slimCount,
+                            neighbor, random, slimDegree)
+                    val realSize = points.size - curSize
+                    remain -= realSize
+                    println("slimCount=$slimCount, real filled size=$realSize")
+                    break
+                }
+            }
+        }
+    }
+
+    fun fillFromCenter(center: Point, dim: Int, points: MutableList<Point>, borders: MutableList<Point>){
+        points.add(center)
+        for (x in center.x - dim .. center.x + dim){
+            for (y in center.y - dim .. center.y + dim){
+                if (x == center.x && y == center.y){
+                    continue
+                }
+                val p = Point(x, y)
+                points.add(p)
+                if (x == center.x - dim || x == center.x + dim || y == center.y - dim || y == center.y + dim){
+                    borders.add(p)
+                }
+            }
+        }
+    }
+
+    fun fillSquare(bound: Rect, recommendCount: Int, points: MutableList<Point>, borders: MutableList<Point>): Int {
+        var w = bound.right - bound.left
+        var h = bound.bottom - bound.top
+        if (recommendCount > w * w) {
+            h = ceil(1.0 * recommendCount / w).toInt()
+        }else if (recommendCount > h * h){
+            w = ceil(1.0 * recommendCount / h).toInt()
+        }else {
+            val ratio = 1.0 * h / w
+            w = sqrt(1.0 * recommendCount / ratio).toInt()
+            h = ceil(1.0 * recommendCount / w).toInt()
+        }
+        w = min(w, bound.right - bound.left)
+        h = min(h, bound.bottom - bound.top)
+        val result = w * h
+
+        val l = (bound.right - bound.left - w) / 2 + bound.left
+        val t = (bound.bottom - bound.top - h) / 2 + bound.top
+        val r = l + w
+        val b = t + h
+        for (x in l .. r){
+            for (y in t .. b){
+                val p = Point(x, y)
+                points.add(p)
+                if (x == l || x == r || y == t || y == b){
+                    borders.add(p)
+                }
+            }
+        }
+        return result
+    }
+
+    fun generateShape2(points: MutableList<Point>, borders: MutableList<Point>,
+                      bound: Rect, count: Int,
+                       slimRatioEveryTime: Double, slimDegree: Int) {
+        val random = Random(System.currentTimeMillis())
+
+        var squareCount: Int = count / 3
+        squareCount = fillSquare(bound, squareCount, points, borders)
+
+        val fatCount = count / 2 - squareCount + 1
+        fillWithFat(points, borders, bound, fatCount, random)
+        println("fatCount=$fatCount, real filled size=${points.size}")
+
+        var remain = count - points.size
+        while (true){
+            if (remain < 1){
+                return
+            }
+
+            var slimCount = (remain * slimRatioEveryTime).toInt()
+            if (slimCount <= 8){
+                slimCount = remain
+            }
+
+            val border = borders[random.nextInt(borders.size)]
+            val neighbors = getNeighbors(border)
+            val curSize = points.size
+            for (neighbor in neighbors){
+                if (isValid(neighbor, bound) && !points.contains(neighbor)){
+                    fillWithSlim(points, borders, mutableListOf(), bound, slimCount,
+                            neighbor, random, slimDegree)
+                    val realSize = points.size - curSize
+                    remain -= realSize
+                    println("slimCount=$slimCount, real filled size=$realSize")
+                    break
+                }
+            }
+        }
+    }
+
+    fun sortPoints2Lines(bound: Rect, points: MutableList<Point>, borders: MutableList<Point>, lines: MutableList<Line2>){
+        val map = mutableMapOf<Int, MutableList<Int>>()
+        for (p in borders) {
+            val x = p.x
+            val y = p.y
+            var yList = map[x]
+            if (yList == null){
+                yList = mutableListOf()
+                map[x] = yList
+            }
+            if (yList.size == 0){
+                yList[0] = y
+            }else {
+                var index = 0
+                for ((i, item) in yList.withIndex()){
+                    if (y < item){
+                        break
+                    }else {
+                        index = i + 1
+                    }
+                }
+                yList[index] = y
+            }
+        }
+    }
+
+    private fun getNextDirection(points: MutableList<Point>, curPoint: Point, curDirection: Direction): Direction? {
+        val dirs = curDirection.getDirections()
+        for (dir in dirs){
+            if (points.contains(Point(curPoint.x + dir.deltaX, curPoint.y + dir.deltaY))){
+                return dir
+            }
+        }
+        return null
+    }
+
+    fun startSortBorders(points: MutableList<Point>, borders: MutableList<Point>, sorted: MutableList<Point>){
+        var curPoint = borders[0]
+        for (i in 1 until borders.size){
+            val candidate = borders[i]
+            if (candidate.x < curPoint.x){
+                curPoint = candidate
+                continue
+            }
+            if (candidate.x == curPoint.x){
+                if (candidate.y < curPoint.y){
+                    curPoint = candidate
+                    continue
+                }
+            }
+        }
+
+        val neighbors = getNeighbors(curPoint)
+        var count = 0
+        for (item in neighbors){
+            if (points.contains(item)){
+                count ++
+            }
+        }
+
+        sortBorders(points, sorted, curPoint, count, curPoint, Direction.RIGHT)
+    }
+
+    fun sortBorders(points: MutableList<Point>, sorted: MutableList<Point>,
+                    startPoint: Point, startPointTraversalTimeRemain: Int,
+                    curPoint: Point, curDirection: Direction){
+        val isStart = curPoint == startPoint
+        if (isStart && startPointTraversalTimeRemain == 0){
+            return
+        }
+
+        sorted.add(curPoint)
+        val remain = if (isStart) startPointTraversalTimeRemain - 1 else startPointTraversalTimeRemain
+
+        var nextDirection = getNextDirection(points, curPoint, curDirection)
+        if (nextDirection == null){
+            nextDirection = curDirection.opposite()
+            sortBorders(points, sorted, startPoint, remain, curPoint, nextDirection)
+        }else {
+            val nextPoint = Point(curPoint.x + nextDirection.deltaX, curPoint.y + nextDirection.deltaY)
+            sortBorders(points, sorted, startPoint, remain, nextPoint, nextDirection)
+        }
+    }
+
+    fun pointEnlarge(origin: Point, step: Int, uiW: Int, uiH: Int, fullX: Int, fullY: Int): Point{
+        val xRatio = 1.0f * uiW / fullX
+        val yRatio = 1.0f * uiH / fullY
+        val x = (origin.x * step) * xRatio
+        val y = (origin.y * step) * yRatio
+        return Point(x.toInt(), y.toInt())
+    }
+
+    fun sortedBorders2Path(borders: MutableList<Point>, step: Int, uiW: Int, uiH: Int, fullX: Int, fullY: Int): Path {
+        val path = Path()
+        val p0 = pointEnlarge(borders[0], step, uiW, uiH, fullX, fullY)
+        path.moveTo(p0.x.toFloat(), p0.y.toFloat())
+        for (index in 1 until borders.size){
+            val pi = pointEnlarge(borders[index], step, uiW, uiH, fullX, fullY)
+            path.lineTo(pi.x.toFloat(), pi.y.toFloat())
+        }
+        path.close()
+        return path
     }
 
 }

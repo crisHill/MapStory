@@ -15,7 +15,7 @@ import java.util.*
  */
 class CrisMap(context: Context, attrs: AttributeSet?): View(context, attrs) {
 
-    val paint: Paint = Paint();
+    val paint: Paint = Paint()
     var terrains: MutableList<Terrain>? = null
     var paintMap: EnumMap<TerrainType, BitmapShader>? = null
 
