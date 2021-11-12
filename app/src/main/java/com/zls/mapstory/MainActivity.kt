@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
         render()
 
-        //TestData.testStartSortBorders()
+        //TestData.testStartSortBorders2()
     }
     private fun render(){
         data?.apply {

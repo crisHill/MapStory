@@ -508,22 +508,23 @@ object CommonUtil {
             }
         }
 
-        val neighbors = getNeighbors(curPoint)
+        /*val neighbors = getNeighbors(curPoint)
         var count = 0
         for (item in neighbors){
             if (points.contains(item)){
                 count ++
             }
         }
+        count = 2*/
 
-        sortBorders(points, sorted, curPoint, count, curPoint, Direction.RIGHT)
+        sortBorders(points, sorted, curPoint, 2, curPoint, Direction.RIGHT)
     }
 
     fun sortBorders(points: MutableList<Point>, sorted: MutableList<Point>,
                     startPoint: Point, startPointTraversalTimeRemain: Int,
                     curPoint: Point, curDirection: Direction){
         val isStart = curPoint == startPoint
-        if (isStart && startPointTraversalTimeRemain == 0){
+        if (isStart && startPointTraversalTimeRemain == 1){
             return
         }
 

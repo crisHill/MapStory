@@ -160,4 +160,16 @@ object TestData {
         println("---end")
     }
 
+    fun testStartSortBorders2(){
+        val sorted: MutableList<Point> = mutableListOf()
+        val borders: MutableList<Point> = mutableListOf(Point(4, 3),Point(4, 6),Point(6, 3),Point(6, 4),Point(6, 5),Point(6, 6),Point(5, 7),Point(3, 4),Point(5, 2),Point(3, 5),Point(2, 4),Point(1, 4),Point(1, 3),Point(2, 3))
+        val points: MutableList<Point> = mutableListOf(Point(4, 3),Point(4, 4),Point(4, 5),Point(4, 6),Point(5, 3),Point(5, 4),Point(5, 5),Point(5, 6),Point(6, 3),Point(6, 4),Point(6, 5),Point(6, 6),Point(5, 7),Point(3, 4),Point(5, 2),Point(3, 5),Point(2, 4),Point(1, 4),Point(1, 3),Point(2, 3))
+        CommonUtil.startSortBorders(points, borders, sorted)
+        print("SortBorders=")
+        for (p in sorted){
+            print(p)
+        }
+        println("---end")
+    }
+
 }
