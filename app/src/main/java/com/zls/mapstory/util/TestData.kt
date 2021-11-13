@@ -1,5 +1,6 @@
 package com.zls.mapstory.util
 
+import android.graphics.Path
 import android.graphics.Point
 import com.zls.mapstory.bean.Square
 import com.zls.mapstory.bean.Terrain
@@ -170,6 +171,17 @@ object TestData {
             print(p)
         }
         println("---end")
+    }
+
+    fun createSeaPath(uiW: Int, uiH: Int): Path {
+        val path = Path()
+        val p0 = Point(10, 10)
+        path.moveTo(10F, 10F)
+        path.lineTo((uiW - 10).toFloat(), 10F)
+        path.lineTo((uiW - 10).toFloat(), (uiH - 10).toFloat())
+        path.lineTo(10f, (uiH - 10).toFloat())
+        path.close()
+        return path
     }
 
 }

@@ -614,6 +614,12 @@ object CommonUtil {
                     curPoint: Point, curDirection: Direction, step: Int){
         val isStart = curPoint == startPoint
         if (isStart && startPointTraversalTimeRemain == 1){
+            val firstPoint = sorted[0]
+            val lastPoint = sorted[sorted.size - 1]
+            val compensatePoint = Point(firstPoint.x, lastPoint.y)
+            if (!sorted.contains(compensatePoint)){
+                sorted.add(compensatePoint)
+            }
             return
         }
 
@@ -631,19 +637,30 @@ object CommonUtil {
             addedPoint.x -= step / 2
             addedPoint.y += step / 2
         }
-        sorted.add(addedPoint)
-
-        val remain = if (isStart) startPointTraversalTimeRemain - 1 else startPointTraversalTimeRemain
+        if (!sorted.contains(addedPoint)){
+            sorted.add(addedPoint)
+        }
 
         var nextDirection = getNextDirection(points, curPoint, curDirection)
+
+        val needCompensate: Boolean = nextDirection == null || curDirection.next() == nextDirection
+        if (needCompensate){
+            val x = addedPoint.x + curDirection.deltaX * step
+            val y = addedPoint.y + curDirection.deltaY * step
+            val compensatePoint = Point(x, y)
+            sorted.add(compensatePoint)
+        }
+
+        val nextPoint: Point
         if (nextDirection == null){
             nextDirection = curDirection.opposite()
-            //反方向时最好加上一个点，防止形成斜线
-            sortBorders2(points, sorted, startPoint, remain, curPoint, nextDirection, step)
+            nextPoint = curPoint
         }else {
-            val nextPoint = Point(curPoint.x + nextDirection.deltaX, curPoint.y + nextDirection.deltaY)
-            sortBorders2(points, sorted, startPoint, remain, nextPoint, nextDirection, step)
+            nextPoint = Point(curPoint.x + nextDirection.deltaX, curPoint.y + nextDirection.deltaY)
         }
+
+        val remain = if (isStart) startPointTraversalTimeRemain - 1 else startPointTraversalTimeRemain
+        sortBorders2(points, sorted, startPoint, remain, nextPoint, nextDirection, step)
     }
 
 }

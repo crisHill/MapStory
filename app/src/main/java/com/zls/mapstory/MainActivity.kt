@@ -1,7 +1,7 @@
 package com.zls.mapstory
 
 import android.content.Intent
-import android.graphics.Rect
+import android.graphics.*
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
@@ -14,6 +14,7 @@ import com.zls.mapstory.type.TerrainType
 import com.zls.mapstory.util.AreaCreator6
 import com.zls.mapstory.util.CommonUtil
 import com.zls.mapstory.util.Const
+import com.zls.mapstory.util.TestData
 import com.zls.mapstory.widght.CommonMap
 
 class MainActivity : AppCompatActivity() {
@@ -37,8 +38,15 @@ class MainActivity : AppCompatActivity() {
 
     var loadStart: Long = 0
     var renderStart: Long = 0
-    var data: DrawableArea? = null
+    var data: MutableList<DrawableArea> = mutableListOf()
     private fun getData(w: Int = Const.WORLD_W, h: Int = Const.WORLD_H){
+        data.clear()
+
+        val sea = DrawablePath(TerrainType.SEA, TestData.createSeaPath(map.measuredWidth, map.measuredHeight),
+                Color.GREEN,
+                BitmapShader(BitmapFactory.decodeResource(resources, TerrainType.SEA.paintRes), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT))
+
+        data.add(sea)
         loadStart = System.currentTimeMillis()
         val type: TerrainType = TerrainType.PLAIN
         val count = if (et.text.toString().isEmpty()) 800 else et.text.toString().toInt()
@@ -65,18 +73,17 @@ class MainActivity : AppCompatActivity() {
         val creator = AreaCreator6(area, bound, count)
         creator.start()
         val path = CommonUtil.sortedBorders2Path2(creator.path, map.measuredWidth, map.measuredHeight, w, h)
-        data = DrawablePath(type, path)
+        data.add(DrawablePath(type, path,Color.GREEN,
+                BitmapShader(BitmapFactory.decodeResource(resources, TerrainType.PLAIN.paintRes), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)))
 
         render()
 
         //TestData.testStartSortBorders2()
     }
     private fun render(){
-        data?.apply {
-            map.viewTreeObserver.addOnDrawListener(listener)
-            renderStart = System.currentTimeMillis()
-            map.refresh(mutableListOf(this))
-        }
+        map.viewTreeObserver.addOnDrawListener(listener)
+        renderStart = System.currentTimeMillis()
+        map.refresh(data)
     }
 
     private fun removeListener(){
