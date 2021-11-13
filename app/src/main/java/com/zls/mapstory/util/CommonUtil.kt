@@ -422,10 +422,10 @@ object CommonUtil {
                        slimRatioEveryTime: Double, slimDegree: Int) {
         val random = Random(System.currentTimeMillis())
 
-        var squareCount: Int = count / 3
+        var squareCount: Int = count / 2
         squareCount = fillSquare(bound, squareCount, points, borders)
 
-        val fatCount = count / 2 - squareCount + 1
+        val fatCount = count * 3 / 4 - squareCount + 1
         fillWithFat(points, borders, bound, fatCount, random)
         println("fatCount=$fatCount, real filled size=${points.size}")
 
@@ -438,6 +438,9 @@ object CommonUtil {
             var slimCount = (remain * slimRatioEveryTime).toInt()
             if (slimCount <= 8){
                 slimCount = remain
+            }
+            if (slimCount > count / 50){
+                slimCount = count / 50
             }
 
             val border = borders[random.nextInt(borders.size)]
