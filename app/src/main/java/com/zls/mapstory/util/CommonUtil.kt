@@ -385,7 +385,23 @@ object CommonUtil {
         }
     }
 
+    fun fillSquareBorder(points: MutableList<Point>, l: Int, t: Int, r: Int, b: Int){
+        for (x in l .. r){
+            val pt = Point(x, t)
+            val pb = Point(x, b)
+            points.add(pt)
+            points.add(pb)
+        }
+        for (y in t + 1 until b){
+            val pl = Point(l, y)
+            val pr = Point(r, y)
+            points.add(pl)
+            points.add(pr)
+        }
+    }
+
     fun fillSquare(bound: Rect, recommendCount: Int, points: MutableList<Point>, borders: MutableList<Point>): Int {
+        val now = System.currentTimeMillis()
         var w = bound.right - bound.left
         var h = bound.bottom - bound.top
         if (recommendCount > w * w) {
@@ -405,15 +421,12 @@ object CommonUtil {
         val t = (bound.bottom - bound.top - h) / 2 + bound.top
         val r = l + w
         val b = t + h
-        for (x in l .. r){
-            for (y in t .. b){
-                val p = Point(x, y)
-                points.add(p)
-                if (x == l || x == r || y == t || y == b){
-                    borders.add(p)
-                }
-            }
-        }
+
+        fillSquareBorder(borders, l, t, r, b)
+        points.addAll(borders)
+        fillSquareBorder(points, l + 1, t + 1, r - 1, b - 1)
+
+        println("fillSquare:recommendCount=$recommendCount, cost count=$result, cost time=${System.currentTimeMillis() - now}")
         return result
     }
 
@@ -422,12 +435,14 @@ object CommonUtil {
                        slimRatioEveryTime: Double, slimDegree: Int) {
         val random = Random(System.currentTimeMillis())
 
-        var squareCount: Int = count / 2
+        var squareCount: Int = count * 300 / 1000
         squareCount = fillSquare(bound, squareCount, points, borders)
 
-        val fatCount = count * 3 / 4 - squareCount + 1
+        val fatCount = count * 800 / 1000 - squareCount
+        val fatFillStart = System.currentTimeMillis()
+        val sizeBeforeFatFill = points.size
         fillWithFat(points, borders, bound, fatCount, random)
-        println("fatCount=$fatCount, real filled size=${points.size}")
+        println("fatCount=$fatCount, cost count=${points.size - sizeBeforeFatFill}, cost time=${System.currentTimeMillis() - fatFillStart}")
 
         var remain = count - points.size
         while (true){
@@ -439,20 +454,18 @@ object CommonUtil {
             if (slimCount <= 8){
                 slimCount = remain
             }
-            if (slimCount > count / 50){
-                slimCount = count / 50
-            }
 
             val border = borders[random.nextInt(borders.size)]
             val neighbors = getNeighbors(border)
-            val curSize = points.size
             for (neighbor in neighbors){
                 if (isValid(neighbor, bound) && !points.contains(neighbor)){
+                    val curSize = points.size
+                    val slimFillStart = System.currentTimeMillis()
                     fillWithSlim(points, borders, mutableListOf(), bound, slimCount,
                             neighbor, random, slimDegree)
                     val realSize = points.size - curSize
                     remain -= realSize
-                    println("slimCount=$slimCount, real filled size=$realSize")
+                    println("slimCount=$slimCount, cost count=$realSize, cost time=${System.currentTimeMillis() - slimFillStart}")
                     break
                 }
             }

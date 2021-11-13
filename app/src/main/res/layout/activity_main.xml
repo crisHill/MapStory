@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="200"
+        android:text="2000"
         android:hint="input dot num"
         android:background="@color/teal_700"
         android:inputType="number"

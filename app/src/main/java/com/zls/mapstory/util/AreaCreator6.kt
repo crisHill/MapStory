@@ -16,14 +16,14 @@ import kotlin.math.sqrt
 class AreaCreator6(area: Int,
                    private val bound: Rect,
                    private var count: Int = 0,
-                   private val slimRatioEveryTime: Double = 0.33, private val slimDegree: Int = 3) {
+                   private val slimRatioEveryTime: Double = 0.33, private val slimDegree: Int = 2) {
 
     val points = mutableListOf<Point>()
     private val borders = mutableListOf<Point>()
     val squares = mutableListOf<Square>()
     val path = mutableListOf<Point>()
-    //step最小为4，且必须是偶数
-    var step = 4
+    //step必须是偶数
+    var step = 2
 
     init {
 
@@ -50,11 +50,13 @@ class AreaCreator6(area: Int,
 
     fun start() {
         CommonUtil.generateShape2(points, borders, bound, count, slimRatioEveryTime, slimDegree)
-        CommonUtil.printPoints("points", points)
-        CommonUtil.printPoints("borders", borders)
+        //CommonUtil.printPoints("points", points)
+        //CommonUtil.printPoints("borders", borders)
 
+        val now = System.currentTimeMillis()
         CommonUtil.startSortBorders2(points, borders, path, step)
-        CommonUtil.printPoints("path", path)
+        println("startSortBorders2 cost time=${System.currentTimeMillis() - now}")
+        //CommonUtil.printPoints("path", path)
         //CommonUtil.points2Squares(mutableListOf(points), squares)
         //points2Zone()
     }
