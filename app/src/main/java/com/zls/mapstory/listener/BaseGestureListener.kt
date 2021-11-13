@@ -34,16 +34,13 @@ abstract class BaseGestureListener: GestureDetector.OnGestureListener {
             if (lastCurrent < 0) {
                 lastCurrent = current
             } else {
-                val gap = 20
+                val gap = 50
                 if (lastCurrent - current > gap) {
-                    //两点距离变小
-                    println("缩小")
-                    lastCurrent = current
                     onScale(1.0f * (current + gap) / lastCurrent)
-                } else if (current - lastCurrent > gap) {
-                    println("放大")
                     lastCurrent = current
+                } else if (current - lastCurrent > gap) {
                     onScale(1.0f * (current - gap) / lastCurrent)
+                    lastCurrent = current
                 }
             }
         }

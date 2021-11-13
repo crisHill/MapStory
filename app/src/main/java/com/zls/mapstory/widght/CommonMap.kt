@@ -37,6 +37,7 @@ class CommonMap(context: Context, attrs: AttributeSet?): View(context, attrs) {
         lp.width = w.toInt()
         lp.height = h.toInt()
         this.layoutParams = lp
+        println("scale $rate to (${lp.width}, ${lp.height})")
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
