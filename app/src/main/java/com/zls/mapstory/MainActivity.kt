@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                 Color.GREEN,
                 BitmapShader(BitmapFactory.decodeResource(resources, TerrainType.SEA.paintRes), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT))
 
-        data.add(sea)
+        //data.add(sea)
         loadStart = System.currentTimeMillis()
         val type: TerrainType = TerrainType.PLAIN
         val count = if (et.text.toString().isEmpty()) 800 else et.text.toString().toInt()
@@ -68,13 +68,13 @@ class MainActivity : AppCompatActivity() {
         r1.op(r2, Region.Op.UNION)
         data = DrawableSquare(type, r1.boundaryPath)*/
 
-        val area = w*h/4
+        val area = w*h/10
         val bound = Rect(10, 10, w - 10, h - 10)
         val creator = AreaCreator6(area, bound, count)
         creator.start()
         val path = CommonUtil.sortedBorders2Path2(creator.path, map.measuredWidth, map.measuredHeight, w, h)
-        data.add(DrawablePath(type, path,Color.GREEN,
-                BitmapShader(BitmapFactory.decodeResource(resources, TerrainType.PLAIN.paintRes), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)))
+        data.add(DrawablePath(type, path,Color.GREEN/*,
+                BitmapShader(BitmapFactory.decodeResource(resources, TerrainType.PLAIN.paintRes), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)*/))
 
         render()
 
